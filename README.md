@@ -2,25 +2,48 @@
 
 [![tests](https://github.com/valeriefong/chaotic-recurrent-networks/actions/workflows/tests.yml/badge.svg)](https://github.com/valeriefong/chaotic-recurrent-networks/actions/workflows/tests.yml)
 
-PyTorch code for computing the full Lyapunov spectrum of recurrent neural networks, and with it how
-chaotic a network is, how much information its dynamics generate, and how many dimensions its activity
-explores.
+Dynamical models of recurrent neural networks are useful tools for understanding the relationship
+between network connectivity and the resulting firing-rate dynamics. This repository computes the full
+Lyapunov spectrum of such networks in PyTorch. Characterizing the full spectrum offers much more
+information than whether chaotic dynamics exist: from it we learn about the specific nature of the
+chaotic behavior through the Kolmogorov-Sinai entropy rate and the Kaplan-Yorke attractor dimension.
 
 ![Three network models](figures/fig1_models.png)
 
-*Figure 1. (A) One random network (N = 1000) at gain g = 0.9, 2 and 5: five unit activities x_i from a
-random initial condition. (B) One network per model, N = 1000, with activity shown at g = 2 (Random,
-Dynamically critical) and g = 7 (Barcode). Left: 8 units of the network; orange excitatory, grey
-inhibitory, line width scaled by |w|; loops are self-connections. Middle: eigenvalues of the
-connectivity matrix in units of g (grey circle: radius g); Barcode's outlier at about μ = −40 lies off
-the axis. Right: five unit activities.*
+*Figure 1. (A) Increasing the overall connection strength through the gain parameter g induces a sharp
+transition from stable to chaotic dynamics in the random network (N = 1000; g = 0.9, 2 and 5).
+(B) The three architectures (N = 1000; g = 2 for Random and Dynamically critical, g = 7 for Barcode).
+Left: schematics of connections between a subset of neurons; orange lines represent excitatory and gray
+lines inhibitory connections, with relative strength shown by line thickness; loops are
+self-connections. Middle: eigenvalues of the connectivity matrices, in units of g; Barcode's outlier at
+about μ = −40 lies off the axis. Right: example traces of single-neuron activity.*
+
+## Background
+
+Introducing nonlinearity into a recurrent network generates more complex dynamics, including chaos,
+when sufficiently strong connections between neurons exist. A classical example is the firing-rate
+model with weights sampled from a Gaussian distribution and a tanh activation function. Sompolinsky,
+Crisanti and Sommers (1988) characterized its transition to chaos by varying a gain parameter that
+controls the overall strength of connections: in the large-network limit, the dynamics transition from
+stable to chaotic at the critical gain g_c = 1. Engelken, Wolf and Abbott (2023) characterized the full
+Lyapunov spectrum of this model.
+
+More recently proposed network models have distinct connectivity structures and stabilization
+mechanisms that generate chaotic dynamics. This code applies the same analysis to two of them:
+
+- **Dynamically critical (DC) networks**, defined by their many dynamic modes on the edge of instability
+  (Magnasco et al., 2009; Magnasco, 2022). Unlike the random network, in which a small number of modes
+  lose stability at the onset of chaos, the DC construction places an extensive set of modes near
+  instability, so many must lose stability at once.
+- **Barcode networks** (Fang et al., 2025), which use a ReLU activation function and stabilize recurrent
+  activity with global inhibition and an activity-dependent leak that tracks overall network activity.
 
 ## What it does
 
-- **Three network models** with rate dynamics τ dx/dt = −x + W φ(x): a random network (Sompolinsky et
-  al., 1988), a dynamically critical network with a fraction of its connectivity eigenvalues placed just
-  below the instability boundary, and the Barcode network of Fang et al. (2025), which uses ReLU units
-  and a state-dependent leak.
+- **Three network models** that share the goal of modeling firing-rate dynamics but differ in their
+  connectivity structure and stabilization mechanisms: the classical random network, a DC network with
+  about 30% of its connectivity eigenvalues placed on the edge of instability, and the Barcode network.
+  The analysis focuses on autonomous dynamics, in the absence of input.
 - **Full Lyapunov spectrum** by the QR (Benettin) method, integrating the state with fourth-order
   Runge-Kutta and the tangent vectors with the exact tangent map of that RK4 step (forward Euler is
   also available).
@@ -71,22 +94,37 @@ a spectrum.
 
 ## Method in brief
 
-For the random network, the state x ∈ ℝᴺ follows
+For the random network of N neurons, the continuous-time dynamics are
 
-  τ dx/dt = −x + W tanh(x),  W_ij ~ N(0, g²/N), W_ii = 0.
+  τ dx_i/dt = −x_i + g Σ_j W_ij tanh(x_j),  i = 1, …, N,
 
-A small perturbation δ evolves with the Jacobian, dδ/dt = J(x) δ, where
-J(x) = (−I + W diag(sech² x)) / τ. The Lyapunov exponents are the average exponential growth rates of
-perturbations in N independent directions. To measure them:
+where x_i is the firing rate of neuron i, the weights W_ij are sampled from a Gaussian distribution with
+mean zero and variance 1/N, autapses are removed (W_ii = 0), τ = 1, and the dimensionless gain g
+controls the overall coupling strength. The Jacobian of the dynamics is
+J(x) = −I + g W diag(sech²(x)).
 
-1. Evolve the state and an orthonormal set of N tangent vectors Q together, one RK4 step at a time,
-   using the exact derivative of the RK4 step.
-2. Every T_ONS, re-orthonormalize with a QR decomposition, Q ← QR. The diagonal of R records how much
-   each direction stretched.
-3. Average: λ_i = (1/T) Σ log |R_ii| over the run.
+Along a trajectory, an arbitrarily small perturbation δx evolves according to the variational equation
+dδx/dt = J(x(t)) δx. Each Lyapunov exponent is the asymptotic rate of exponential growth or collapse of
+such a perturbation; an N-dimensional state space has N of them, λ₁ ≥ λ₂ ≥ … ≥ λ_N. When λ₁ > 0,
+nearby trajectories diverge exponentially, reflecting sensitive dependence on initial conditions: the
+hallmark of chaos.
 
-From the sorted spectrum λ₁ ≥ λ₂ ≥ … ≥ λ_N: H = Σ_{λ_i > 0} λ_i, and
-D = M + (λ₁ + … + λ_M) / |λ_{M+1}|, where M is the largest index with λ₁ + … + λ_M ≥ 0.
+The full spectrum is estimated with the standard iterative Jacobian-based method of Shimada and
+Nagashima (1979) and Benettin et al. (1980):
+
+1. An N × N system of orthonormal perturbation vectors Q is evolved alongside the trajectory. The
+   network is integrated with fixed-step fourth-order Runge-Kutta (RK4), and Q is advanced with the
+   derivative of the same discrete RK4 step.
+2. Every T_ONS, a QR decomposition reorthonormalizes the perturbations. This prevents collapse onto the
+   dominant direction of exponential divergence, which would lose all information about the other
+   N − 1 directions.
+3. The exponents are estimated by accumulating log |R_ii|, the diagonal entries of R, and averaging
+   over the accumulation time T: λ_i ≈ (1/T) Σ_m log |R_ii^(m)|.
+
+The Kolmogorov-Sinai entropy rate, a rate of information generation, is the sum of all positive
+exponents, H = Σ_{λ_i > 0} λ_i (Pesin's identity). The Kaplan-Yorke dimension estimates the
+dimensionality of a chaotic attractor, D = k + (λ₁ + … + λ_k) / |λ_{k+1}|, where k is the largest index
+such that the cumulative sum of exponents is non-negative.
 
 ## Validation
 
@@ -124,8 +162,7 @@ figures/             figures shown above
 
 ## Status
 
-A manuscript is in preparation. Results for the dynamically critical and Barcode networks will be
-added after publication.
+A manuscript is in preparation. Results for the dynamically critical and Barcode networks are pending.
 
 ## Acknowledgements and attribution
 
@@ -138,11 +175,20 @@ repository's MIT license.
 
 ## References
 
+- Benettin G, Galgani L, Giorgilli A, Strelcyn JM (1980). Lyapunov characteristic exponents for smooth
+  dynamical systems and for Hamiltonian systems; a method for computing all of them. *Meccanica* 15,
+  9–20 and 21–30.
 - Engelken R, Wolf F, Abbott LF (2023). Lyapunov spectra of chaotic recurrent neural networks.
   *Physical Review Research* 5, 043044.
 - Fang C, Lindsey JW, Abbott LF, Aronov D, Chettih SN (2025). Barcode activity in a recurrent network
   model of the hippocampus enables efficient memory binding. *eLife* 14:RP103512.
   https://doi.org/10.7554/eLife.103512
+- Magnasco MO, Piro O, Cecchi GA (2009). Self-tuned critical anti-Hebbian networks. *Physical Review
+  Letters* 102, 258102.
+- Magnasco MO (2022). Robustness and flexibility of neural function through dynamical criticality.
+  *Entropy* 24, 591.
+- Shimada I, Nagashima T (1979). A numerical approach to ergodic problem of dissipative dynamical
+  systems. *Progress of Theoretical Physics* 61, 1605–1616.
 - Sompolinsky H, Crisanti A, Sommers HJ (1988). Chaos in random neural networks. *Physical Review
   Letters* 61, 259.
 
