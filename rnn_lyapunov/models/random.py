@@ -32,7 +32,8 @@ class RandomRNN(RNN):
     def jacobian(self, x: torch.Tensor, dt: float) -> torch.Tensor:
         '''
         Override the base class Jacobian using jacrev with the analytic Jacobian for this model.
-        See Engelken et al. (2023), equation (3).
+        See Engelken et al. (2023), Eq. (2): the Jacobian of the flow is -I + W diag(sech^2(x))
+        (divided by tau); the Euler step's Jacobian is I + dt times that.
 
         Analytic Jacobian of the Euler step is given by:
         Df = (1 - dt/tau)*I + W * diag(dt/tau / cosh(x)**2)
