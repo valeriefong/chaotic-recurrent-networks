@@ -66,7 +66,8 @@ barcode = BarcodeRNN(N=100, g=7.0, seed_net=0, keep_diag=True)
 
 Some defaults are kept for compatibility (`integrator="euler"`, `keep_diag=False`,
 `critical_modes=1`), so pass these settings explicitly. [`examples/quickstart.ipynb`](examples/quickstart.ipynb)
-walks through building, simulating and analyzing the models.
+walks through building and simulating the models (it reproduces the traces in Figure 1) and computing
+a spectrum.
 
 ## Method in brief
 
@@ -99,11 +100,8 @@ D = M + (λ₁ + … + λ_M) / |λ_{M+1}|, where M is the largest index with λ�
 - **Published results**: for the random network, the spectra, entropy rate and dimension reproduce
   Engelken, Wolf & Abbott (2023) (Figure 2).
 - **Reference implementation**: the solver was validated against the published reference
-  implementation of Engelken et al. (2023). Run in Euler mode, in double precision, from the same
-  connectivity, initial state and initial basis, the two agree to rounding precision for non-chaotic
-  networks and within finite-time noise for chaotic ones, where rounding differences grow
-  exponentially. The scripts for this check are not included, because the reference code has no
-  license.
+  implementation of Engelken et al. (2023). The scripts for this check are not included, because the
+  reference code has no license.
 
 ![Random network baseline](figures/fig2_random_baseline.png)
 
@@ -142,7 +140,9 @@ repository's MIT license.
 
 - Engelken R, Wolf F, Abbott LF (2023). Lyapunov spectra of chaotic recurrent neural networks.
   *Physical Review Research* 5, 043044.
-- Fang C, Lindsey JW, Abbott LF, Aronov D, Chettih SN (2025). *eLife* 14:RP103512.
+- Fang C, Lindsey JW, Abbott LF, Aronov D, Chettih SN (2025). Barcode activity in a recurrent network
+  model of the hippocampus enables efficient memory binding. *eLife* 14:RP103512.
+  https://doi.org/10.7554/eLife.103512
 - Sompolinsky H, Crisanti A, Sommers HJ (1988). Chaos in random neural networks. *Physical Review
   Letters* 61, 259.
 
