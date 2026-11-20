@@ -176,21 +176,24 @@ repository's MIT license.
 ## References
 
 - Benettin G, Galgani L, Giorgilli A, Strelcyn JM (1980). Lyapunov characteristic exponents for smooth
-  dynamical systems and for Hamiltonian systems; a method for computing all of them. *Meccanica* 15,
-  9–20 and 21–30.
+  dynamical systems and for Hamiltonian systems; a method for computing all of them. Part 1: Theory.
+  *Meccanica* 15, 9–20. https://doi.org/10.1007/BF02128236
+- Benettin G, Galgani L, Giorgilli A, Strelcyn JM (1980). Lyapunov characteristic exponents for smooth
+  dynamical systems and for Hamiltonian systems; a method for computing all of them. Part 2: Numerical
+  application. *Meccanica* 15, 21–30. https://doi.org/10.1007/BF02128237
 - Engelken R, Wolf F, Abbott LF (2023). Lyapunov spectra of chaotic recurrent neural networks.
-  *Physical Review Research* 5, 043044.
+  *Physical Review Research* 5, 043044. https://doi.org/10.1103/PhysRevResearch.5.043044
 - Fang C, Lindsey JW, Abbott LF, Aronov D, Chettih SN (2025). Barcode activity in a recurrent network
-  model of the hippocampus enables efficient memory binding. *eLife* 14:RP103512.
+  model of the hippocampus enables efficient memory binding. *eLife* 14, RP103512.
   https://doi.org/10.7554/eLife.103512
 - Magnasco MO, Piro O, Cecchi GA (2009). Self-tuned critical anti-Hebbian networks. *Physical Review
-  Letters* 102, 258102.
+  Letters* 102, 258102. https://doi.org/10.1103/PhysRevLett.102.258102
 - Magnasco MO (2022). Robustness and flexibility of neural function through dynamical criticality.
-  *Entropy* 24, 591.
+  *Entropy* 24, 591. https://doi.org/10.3390/e24050591
 - Shimada I, Nagashima T (1979). A numerical approach to ergodic problem of dissipative dynamical
-  systems. *Progress of Theoretical Physics* 61, 1605–1616.
+  systems. *Progress of Theoretical Physics* 61, 1605–1616. https://doi.org/10.1143/PTP.61.1605
 - Sompolinsky H, Crisanti A, Sommers HJ (1988). Chaos in random neural networks. *Physical Review
-  Letters* 61, 259.
+  Letters* 61, 259–262. https://doi.org/10.1103/PhysRevLett.61.259
 
 ## Author and license
 
