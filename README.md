@@ -156,9 +156,6 @@ where $k$ is the largest index such that the cumulative sum of exponents is non-
   - on a linear network, RK4's bias is more than 100 times smaller than Euler's at the same step.
 - **Published results**: for the random network, the spectra, entropy rate and dimension reproduce
   Engelken, Wolf & Abbott (2023) (Figure 2).
-- **Reference implementation**: the solver was validated against the published reference
-  implementation of Engelken et al. (2023). The scripts for this check are not included, because the
-  reference code has no license.
 
 ![Random network baseline](figures/fig2_random_baseline.png)
 
