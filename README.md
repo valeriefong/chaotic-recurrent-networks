@@ -10,13 +10,13 @@ chaotic behavior through the Kolmogorov-Sinai entropy rate and the Kaplan-Yorke 
 
 ![Three network models](figures/fig1_models.png)
 
-*Figure 1. (A) Increasing the overall connection strength through the gain parameter g induces a sharp
-transition from stable to chaotic dynamics in the random network (N = 1000; g = 0.9, 2 and 5).
-(B) The three architectures (N = 1000; g = 2 for Random and Dynamically critical, g = 7 for Barcode).
+*Figure 1. (A) Increasing the overall connection strength through the gain parameter $g$ induces a sharp
+transition from stable to chaotic dynamics in the random network ($N = 1000$; $g = 0.9$, 2 and 5).
+(B) The three architectures ($N = 1000$; $g = 2$ for Random and Dynamically critical, $g = 7$ for Barcode).
 Left: schematics of connections between a subset of neurons; orange lines represent excitatory and gray
 lines inhibitory connections, with relative strength shown by line thickness; loops are
-self-connections. Middle: eigenvalues of the connectivity matrices, in units of g; Barcode's outlier at
-about μ = −40 lies off the axis. Right: example traces of single-neuron activity.*
+self-connections. Middle: eigenvalues of the connectivity matrices, in units of $g$; Barcode's outlier at
+about $\mu = -40$ lies off the axis. Right: example traces of single-neuron activity.*
 
 ## Background
 
@@ -25,7 +25,7 @@ when sufficiently strong connections between neurons exist. A classical example 
 model with weights sampled from a Gaussian distribution and a tanh activation function. Sompolinsky,
 Crisanti and Sommers (1988) characterized its transition to chaos by varying a gain parameter that
 controls the overall strength of connections: in the large-network limit, the dynamics transition from
-stable to chaotic at the critical gain g_c = 1. Engelken, Wolf and Abbott (2023) characterized the full
+stable to chaotic at the critical gain $g_c = 1$. Engelken, Wolf and Abbott (2023) characterized the full
 Lyapunov spectrum of this model.
 
 More recently proposed network models have distinct connectivity structures and stabilization
@@ -47,9 +47,9 @@ mechanisms that generate chaotic dynamics. This code applies the same analysis t
 - **Full Lyapunov spectrum** by the QR (Benettin) method, integrating the state with fourth-order
   Runge-Kutta and the tangent vectors with the exact tangent map of that RK4 step (forward Euler is
   also available).
-- **Summary measures** from the spectrum: the largest exponent λ₁, the entropy rate H (sum of the
-  positive exponents) and the Kaplan-Yorke attractor dimension D.
-- **Tested at scale**: networks up to N = 2000, more than 21,000 simulations run on a university
+- **Summary measures** from the spectrum: the largest exponent $\lambda_1$, the entropy rate $H$ (sum of the
+  positive exponents) and the Kaplan-Yorke attractor dimension $D$.
+- **Tested at scale**: networks up to $N = 2000$, more than 21,000 simulations run on a university
   computing cluster.
 
 ## Install
@@ -94,37 +94,56 @@ a spectrum.
 
 ## Method in brief
 
-For the random network of N neurons, the continuous-time dynamics are
+For the random network of $N$ neurons, the continuous-time dynamics are
 
-  τ dx_i/dt = −x_i + g Σ_j W_ij tanh(x_j),  i = 1, …, N,
+```math
+\tau \frac{dx_i}{dt} = -x_i + g \sum_{j=1}^{N} W_{ij} \tanh(x_j), \qquad i = 1, \dots, N,
+```
 
-where x_i is the firing rate of neuron i, the weights W_ij are sampled from a Gaussian distribution with
-mean zero and variance 1/N, autapses are removed (W_ii = 0), τ = 1, and the dimensionless gain g
-controls the overall coupling strength. The Jacobian of the dynamics is
-J(x) = −I + g W diag(sech²(x)).
+where $x_i$ is the firing rate of neuron $i$, the weights $W_{ij}$ are sampled from a Gaussian
+distribution with mean zero and variance $1/N$, autapses are removed ($W_{ii} = 0$), $\tau = 1$, and the
+dimensionless gain $g$ controls the overall coupling strength. The Jacobian of the dynamics is
 
-Along a trajectory, an arbitrarily small perturbation δx evolves according to the variational equation
-dδx/dt = J(x(t)) δx. Each Lyapunov exponent is the asymptotic rate of exponential growth or collapse of
-such a perturbation; an N-dimensional state space has N of them, λ₁ ≥ λ₂ ≥ … ≥ λ_N. When λ₁ > 0,
-nearby trajectories diverge exponentially, reflecting sensitive dependence on initial conditions: the
-hallmark of chaos.
+```math
+J(x) = -I + g\, W \operatorname{diag}\!\left(\operatorname{sech}^2 x\right).
+```
+
+Along a trajectory, an arbitrarily small perturbation $\delta x$ evolves according to the variational
+equation $d\,\delta x/dt = J(x(t))\, \delta x$. Each Lyapunov exponent is the asymptotic rate of
+exponential growth or collapse of such a perturbation; an $N$-dimensional state space has $N$ of them,
+$\lambda_1 \ge \lambda_2 \ge \dots \ge \lambda_N$. When $\lambda_1 > 0$, nearby trajectories diverge
+exponentially, reflecting sensitive dependence on initial conditions: the hallmark of chaos.
 
 The full spectrum is estimated with the standard iterative Jacobian-based method of Shimada and
 Nagashima (1979) and Benettin et al. (1980):
 
-1. An N × N system of orthonormal perturbation vectors Q is evolved alongside the trajectory. The
-   network is integrated with fixed-step fourth-order Runge-Kutta (RK4), and Q is advanced with the
-   derivative of the same discrete RK4 step.
-2. Every T_ONS, a QR decomposition reorthonormalizes the perturbations. This prevents collapse onto the
-   dominant direction of exponential divergence, which would lose all information about the other
-   N − 1 directions.
-3. The exponents are estimated by accumulating log |R_ii|, the diagonal entries of R, and averaging
-   over the accumulation time T: λ_i ≈ (1/T) Σ_m log |R_ii^(m)|.
+1. An $N \times N$ system of orthonormal perturbation vectors $Q$ is evolved alongside the trajectory.
+   The network is integrated with fixed-step fourth-order Runge-Kutta (RK4), and $Q$ is advanced with
+   the derivative of the same discrete RK4 step.
+2. Every $T_\mathrm{ONS}$, a QR decomposition reorthonormalizes the perturbations. This prevents
+   collapse onto the dominant direction of exponential divergence, which would lose all information
+   about the other $N - 1$ directions.
+3. The exponents are estimated by accumulating $\log \lvert R_{ii} \rvert$, the logarithms of the
+   diagonal entries of $R$, and averaging over the accumulation time $T$:
+
+```math
+\lambda_i \approx \frac{1}{T} \sum_m \log \left\lvert R_{ii}^{(m)} \right\rvert .
+```
 
 The Kolmogorov-Sinai entropy rate, a rate of information generation, is the sum of all positive
-exponents, H = Σ_{λ_i > 0} λ_i (Pesin's identity). The Kaplan-Yorke dimension estimates the
-dimensionality of a chaotic attractor, D = k + (λ₁ + … + λ_k) / |λ_{k+1}|, where k is the largest index
-such that the cumulative sum of exponents is non-negative.
+exponents (Pesin's identity),
+
+```math
+H = \sum_{\lambda_i > 0} \lambda_i .
+```
+
+The Kaplan-Yorke dimension estimates the dimensionality of a chaotic attractor,
+
+```math
+D = k + \frac{\sum_{i=1}^{k} \lambda_i}{\lvert \lambda_{k+1} \rvert},
+```
+
+where $k$ is the largest index such that the cumulative sum of exponents is non-negative.
 
 ## Validation
 
@@ -143,10 +162,10 @@ such that the cumulative sum of exponents is non-negative.
 
 ![Random network baseline](figures/fig2_random_baseline.png)
 
-*Figure 2. The random network. (A) Lyapunov spectra λ_i against i/N for N = 1000 (lines) and N = 200
-(dots); colours index gain g, one band per plotted gain. (B) Entropy rate H/N and dimension D/N against
-g, N = 1000. (C) H and D grow linearly with N at fixed g (extensive chaos). Mean over 20 networks per
-point; T_sim = 1000 τ, RK4. These reproduce Engelken et al. (2023).*
+*Figure 2. The random network. (A) Lyapunov spectra $\lambda_i$ against $i/N$ for $N = 1000$ (lines) and $N = 200$
+(dots); colours index gain $g$, one band per plotted gain. (B) Entropy rate $H/N$ and dimension $D/N$ against
+$g$, $N = 1000$. (C) $H$ and $D$ grow linearly with $N$ at fixed $g$ (extensive chaos). Mean over 20 networks per
+point; $T_\mathrm{sim} = 1000\,\tau$, RK4. These reproduce Engelken et al. (2023).*
 
 ## Repository layout
 
